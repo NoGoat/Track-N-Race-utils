@@ -216,3 +216,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+!telemetry-mapper-winui3/TelemetryMapper.WinUI3/app.manifest

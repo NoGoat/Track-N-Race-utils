@@ -1,7 +1,7 @@
 {
   "track_id": 19,
   "track_name": "Mexico City Grand Prix",
-  "circuit_name": "Aut\u00f3dromo Hermanos Rodr\u00edguez",
+  "circuit_name": "Autódromo Hermanos Rodríguez",
   "track_length_m": 4525,
   "pit_time": 18.5,
   "inlap_pit_time": 7.2,
@@ -7352,5 +7352,37 @@
   "start_finish": [
     175.92,
     185.35
+  ],
+  "slm_dry": [
+    {
+      "start": [
+        927.88,
+        444.56
+      ],
+      "end": [
+        769.67,
+        697.31
+      ]
+    },
+    {
+      "start": [
+        476.29,
+        432.87
+      ],
+      "end": [
+        203.75,
+        364.44
+      ]
+    },
+    {
+      "start": [
+        163.37,
+        183.29
+      ],
+      "end": [
+        866.86,
+        276.02
+      ]
+    }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "track_id": 16,
-  "track_name": "S\u00e3o Paulo Grand Prix",
-  "circuit_name": "Aut\u00f3dromo Jos\u00e9 Carlos Pace",
+  "track_name": "São Paulo Grand Prix",
+  "circuit_name": "Autódromo José Carlos Pace",
   "track_length_m": 4294,
   "pit_time": 21.1,
   "inlap_pit_time": 8.37,
@@ -7006,5 +7006,27 @@
   "start_finish": [
     254.94,
     651.06
+  ],
+  "slm_dry": [
+    {
+      "start": [
+        663.33,
+        809.18
+      ],
+      "end": [
+        776.96,
+        375.41
+      ]
+    },
+    {
+      "start": [
+        253.69,
+        220.35
+      ],
+      "end": [
+        331.33,
+        923.92
+      ]
+    }
   ]
 }
