@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="TelemetryMapper.WinUI3.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TelemetryMapper.WinUI3.Controls"
+    xmlns:converters="using:TelemetryMapper.WinUI3.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:TelemetryMapper.WinUI3.ViewModels"
+    NavigationCacheMode="Required"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <Style x:Key="SurfaceStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="CaptionStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Padding="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="395" />
+        </Grid.ColumnDefinitions>
+
+        <!--  The map and its transport controls form one focused work surface.  -->
+        <Border
+            Grid.Column="0"
+            BorderThickness="1,1,0,1"
+            CornerRadius="8,0,0,0"
+            Style="{StaticResource SurfaceStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid
+                    Canvas.ZIndex="1"
+                    Height="48"
+                    Padding="16,0"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionStyle}"
+                        Text="{x:Bind ViewModel.InfoText, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+
+                <controls:TrackMapCanvas
+                    x:Name="MapCanvas"
+                    Grid.Row="1"
+                    OverlayMoved="OnOverlayMoved"
+                    SeekRequested="OnCanvasSeekRequested" />
+
+                <Grid
+                    Grid.Row="2"
+                    Canvas.ZIndex="1"
+                    Height="56"
+                    Padding="12,8"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        Click="OnStepBackClicked"
+                        IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                        Style="{StaticResource IconButtonStyle}"
+                        ToolTipService.ToolTip="Back one point">
+                        <FontIcon Glyph="&#xE76B;" />
+                    </Button>
+                    <Button
+                        x:Name="PlayButton"
+                        Grid.Column="1"
+                        Click="OnPlayClicked"
+                        IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                        Style="{StaticResource IconButtonStyle}"
+                        ToolTipService.ToolTip="Play">
+                        <FontIcon x:Name="PlayIcon" Glyph="&#xE768;" />
+                    </Button>
+                    <Button
+                        Grid.Column="2"
+                        Click="OnStepForwardClicked"
+                        IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                        Style="{StaticResource IconButtonStyle}"
+                        ToolTipService.ToolTip="Forward one point">
+                        <FontIcon Glyph="&#xE76C;" />
+                    </Button>
+                    <Slider
+                        Grid.Column="3"
+                        Margin="4,0"
+                        VerticalAlignment="Center"
+                        IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                        Maximum="{x:Bind ViewModel.SeekMaximum, Mode=OneWay}"
+                        Minimum="0"
+                        Value="{x:Bind ViewModel.SeekIndex, Mode=TwoWay}" />
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!--  Selector bar keeps the inspector compact and focused.  -->
+        <Border
+            Grid.Column="1"
+            BorderThickness="0,1,1,1"
+            CornerRadius="0"
+            Style="{StaticResource SurfaceStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="56" />
+                </Grid.RowDefinitions>
+
+                <SelectorBar
+                    x:Name="InspectorSelectorBar"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    Height="48"
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    SelectionChanged="OnInspectorSelectorSelectionChanged">
+                    <SelectorBarItem
+                        x:Name="CollectionSelectorItem"
+                        IsSelected="True"
+                        Text="Collection" />
+                    <SelectorBarItem
+                        x:Name="AttributesSelectorItem"
+                        Text="Attributes" />
+                    <SelectorBarItem
+                        x:Name="LayersSelectorItem"
+                        Text="Layers" />
+                    <SelectorBarItem
+                        x:Name="OverlaySelectorItem"
+                        Text="Overlay" />
+                </SelectorBar>
+
+                <Grid
+                    Background="{ThemeResource LayerOnMicaBaseAltFillColorTransparentBrush}"
+                    x:Name="InspectorContentHost"
+                    Grid.Row="1">
+                    <Grid.ChildrenTransitions>
+                        <TransitionCollection>
+                            <EntranceThemeTransition FromHorizontalOffset="24" FromVerticalOffset="0" />
+                        </TransitionCollection>
+                    </Grid.ChildrenTransitions>
+                    <ScrollViewer
+                        x:Name="CollectionPanel"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto">
+                            <StackPanel Padding="16,12,16,20" Spacing="12">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Marker collection" />
+                                    <ComboBox
+                                        x:Name="CollectionCombo"
+                                        HorizontalAlignment="Stretch"
+                                        IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                        ItemsSource="{x:Bind ViewModel.Collections}"
+                                        SelectedItem="{x:Bind ViewModel.SelectedCollection, Mode=TwoWay}"
+                                        SelectionChanged="OnCollectionSelectionChanged" />
+                                    <TextBlock
+                                        Style="{StaticResource CaptionStyle}"
+                                        Text="{x:Bind ViewModel.CurrentKindDescription, Mode=OneWay}" />
+                                </StackPanel>
+
+                                <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                                <StackPanel Spacing="8">
+                                    <Button
+                                        Click="OnAddPointClicked"
+                                        HorizontalAlignment="Stretch"
+                                        IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                        Style="{StaticResource AccentButtonStyle}"
+                                        Visibility="{x:Bind ViewModel.IsPointCollection, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon FontSize="14" Glyph="&#xE710;" />
+                                            <TextBlock Text="{x:Bind ViewModel.PointActionText, Mode=OneWay}" />
+                                        </StackPanel>
+                                    </Button>
+
+                                    <StackPanel
+                                        Spacing="8"
+                                        Visibility="{x:Bind ViewModel.IsZoneCollection, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button Click="OnSetStartClicked" HorizontalAlignment="Stretch" Content="Set start" />
+                                            <Button Grid.Column="1" Click="OnSetEndClicked" HorizontalAlignment="Stretch" Content="Set end" />
+                                        </Grid>
+                                        <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.PendingText, Mode=OneWay}" />
+                                        <Button
+                                            Click="OnAddZoneClicked"
+                                            HorizontalAlignment="Stretch"
+                                            Style="{StaticResource AccentButtonStyle}">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <FontIcon FontSize="14" Glyph="&#xE710;" />
+                                                <TextBlock Text="Add zone" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                                <StackPanel
+                                    Spacing="8"
+                                    Visibility="{x:Bind ViewModel.IsZoneCollection, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Items" />
+                                    <Grid Padding="12,0" ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource CaptionStyle}" Text="#" />
+                                        <TextBlock Grid.Column="1" Style="{StaticResource CaptionStyle}" Text="Start X" />
+                                        <TextBlock Grid.Column="2" Style="{StaticResource CaptionStyle}" Text="Start Y" />
+                                        <TextBlock Grid.Column="3" Style="{StaticResource CaptionStyle}" Text="End X" />
+                                        <TextBlock Grid.Column="4" Style="{StaticResource CaptionStyle}" Text="End Y" />
+                                    </Grid>
+                                    <ListView
+                                        MinHeight="160"
+                                        MaxHeight="280"
+                                        ItemsSource="{x:Bind ViewModel.Rows}"
+                                        SelectedItem="{x:Bind ViewModel.SelectedRow, Mode=TwoWay}"
+                                        SelectionMode="Single">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:MarkerRowViewModel">
+                                                <Grid MinHeight="36" ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="30" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind Index}" />
+                                                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind First}" />
+                                                    <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{x:Bind Second}" />
+                                                    <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{x:Bind Third}" />
+                                                    <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="{x:Bind Fourth}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Button
+                                            Click="OnDeleteClicked"
+                                            HorizontalAlignment="Left"
+                                            IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}"
+                                            ToolTipService.ToolTip="Delete selected item">
+                                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                                <FontIcon FontSize="14" Glyph="&#xE74D;" />
+                                                <TextBlock Text="Delete" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button
+                                            Grid.Column="1"
+                                            Click="OnUpdateStartClicked"
+                                            HorizontalAlignment="Stretch"
+                                            IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}"
+                                            Content="Update start" />
+                                        <Button
+                                            Grid.Column="2"
+                                            Click="OnUpdateEndClicked"
+                                            HorizontalAlignment="Stretch"
+                                            IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}"
+                                            Content="Update end" />
+                                    </Grid>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Spacing="8"
+                                    Visibility="{x:Bind ViewModel.IsPointListCollection, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Items" />
+                                    <Grid Padding="12,0" ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource CaptionStyle}" Text="#" />
+                                        <TextBlock Grid.Column="1" Style="{StaticResource CaptionStyle}" Text="X" />
+                                        <TextBlock Grid.Column="2" Style="{StaticResource CaptionStyle}" Text="Y" />
+                                    </Grid>
+                                    <ListView
+                                        MinHeight="160"
+                                        MaxHeight="280"
+                                        ItemsSource="{x:Bind ViewModel.Rows}"
+                                        SelectedItem="{x:Bind ViewModel.SelectedRow, Mode=TwoWay}"
+                                        SelectionMode="Single">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:MarkerRowViewModel">
+                                                <Grid MinHeight="36" ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="30" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind Index}" />
+                                                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind First}" />
+                                                    <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{x:Bind Second}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Button
+                                            Click="OnDeleteClicked"
+                                            IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}"
+                                            ToolTipService.ToolTip="Delete selected item">
+                                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                                <FontIcon FontSize="14" Glyph="&#xE74D;" />
+                                                <TextBlock Text="Delete" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button
+                                            Grid.Column="1"
+                                            Click="OnUpdatePointClicked"
+                                            HorizontalAlignment="Stretch"
+                                            IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}"
+                                            Content="Update from marker" />
+                                    </Grid>
+                                </StackPanel>
+
+                                <Grid
+                                    ColumnSpacing="8"
+                                    Visibility="{x:Bind ViewModel.IsSinglePointCollection, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox
+                                        Header="X"
+                                        IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                        Text="{x:Bind ViewModel.SinglePointX, Mode=TwoWay}" />
+                                    <TextBox
+                                        Grid.Column="1"
+                                        Header="Y"
+                                        IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                        Text="{x:Bind ViewModel.SinglePointY, Mode=TwoWay}" />
+                                </Grid>
+                            </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer
+                        x:Name="AttributesPanel"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto"
+                        Visibility="Collapsed">
+                        <StackPanel Padding="16,12,16,20" Spacing="12">
+                            <StackPanel Spacing="4">
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Map attributes" />
+                                <TextBlock
+                                    Style="{StaticResource CaptionStyle}"
+                                    Text="Edit the circuit identity, length, and pit-lane timing values stored in the map JSON." />
+                            </StackPanel>
+
+                            <TextBox
+                                Header="Track name"
+                                IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                Text="{x:Bind ViewModel.TrackName, Mode=TwoWay}" />
+                            <TextBox
+                                Header="Circuit name"
+                                IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                Text="{x:Bind ViewModel.CircuitName, Mode=TwoWay}" />
+
+                            <Grid ColumnSpacing="12" RowSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <NumberBox
+                                    Header="Track length (m)"
+                                    IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    Value="{x:Bind ViewModel.TrackLengthMeters, Mode=TwoWay}" />
+                                <NumberBox
+                                    Grid.Column="1"
+                                    Header="Pit time (s)"
+                                    IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                    Minimum="0"
+                                    SmallChange="0.1"
+                                    Value="{x:Bind ViewModel.PitTime, Mode=TwoWay}" />
+                                <NumberBox
+                                    Grid.Row="1"
+                                    Header="In-lap pit time (s)"
+                                    IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                    Minimum="0"
+                                    SmallChange="0.1"
+                                    Value="{x:Bind ViewModel.InlapPitTime, Mode=TwoWay}" />
+                                <NumberBox
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Header="Out-lap pit time (s)"
+                                    IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                    Minimum="0"
+                                    SmallChange="0.1"
+                                    Value="{x:Bind ViewModel.OutlapPitTime, Mode=TwoWay}" />
+                                <NumberBox
+                                    Grid.Row="2"
+                                    Header="Map rotation (deg)"
+                                    IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                                    Maximum="360"
+                                    Minimum="-360"
+                                    SmallChange="1"
+                                    Value="{x:Bind ViewModel.RotationDegrees, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer
+                        x:Name="LayersPanel"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto"
+                        Visibility="Collapsed">
+                            <StackPanel Padding="16,12,16,20" Spacing="12">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Map layers" />
+                                    <TextBlock
+                                        Style="{StaticResource CaptionStyle}"
+                                        Text="Choose which marker collections appear on the track. Visibility does not change map data." />
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.Layers}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:LayerItemViewModel">
+                                            <CheckBox
+                                                MinHeight="40"
+                                                Content="{x:Bind Name}"
+                                                IsChecked="{x:Bind IsVisible, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer
+                        x:Name="OverlayPanel"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto"
+                        Visibility="Collapsed">
+                            <StackPanel Padding="16,12,16,20" Spacing="12">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Reference image" />
+                                    <TextBlock
+                                        Style="{StaticResource CaptionStyle}"
+                                        Text="Align an FIA or circuit image behind the generated centreline." />
+                                </StackPanel>
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox
+                                        x:Name="OverlayUrlBox"
+                                        Header="Image URL"
+                                        KeyDown="OnOverlayUrlKeyDown"
+                                        PlaceholderText="https://…/map.webp" />
+                                    <Button
+                                        Grid.Column="1"
+                                        Margin="0,28,0,0"
+                                        Click="OnBrowseOverlayClicked"
+                                        Content="Browse" />
+                                </Grid>
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button Click="OnLoadOverlayClicked" HorizontalAlignment="Stretch" Content="Load image" />
+                                    <Button Grid.Column="1" Click="OnClearOverlayClicked" HorizontalAlignment="Stretch" Content="Clear" />
+                                </Grid>
+                                <StackPanel Spacing="4">
+                                    <Grid>
+                                        <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Opacity" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            Style="{StaticResource CaptionStyle}"
+                                            Text="0 — 100%" />
+                                    </Grid>
+                                    <Slider
+                                        x:Name="OverlayOpacitySlider"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="50"
+                                        ValueChanged="OnOverlayOpacityChanged" />
+                                </StackPanel>
+                                <Grid ColumnSpacing="12" RowSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <NumberBox
+                                        x:Name="OverlayRotationBox"
+                                        Header="Rotation"
+                                        Maximum="360"
+                                        Minimum="-360"
+                                        SmallChange="0.5"
+                                        ValueChanged="OnOverlayRotationChanged" />
+                                    <NumberBox
+                                        x:Name="OverlayScaleBox"
+                                        Grid.Column="1"
+                                        Header="Scale %"
+                                        Maximum="1000"
+                                        Minimum="5"
+                                        SmallChange="1"
+                                        Value="100"
+                                        ValueChanged="OnOverlayScaleChanged" />
+                                    <NumberBox
+                                        x:Name="OverlayXBox"
+                                        Grid.Row="1"
+                                        Header="Offset X"
+                                        Maximum="4000"
+                                        Minimum="-4000"
+                                        SmallChange="1"
+                                        ValueChanged="OnOverlayOffsetChanged" />
+                                    <NumberBox
+                                        x:Name="OverlayYBox"
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Header="Offset Y"
+                                        Maximum="4000"
+                                        Minimum="-4000"
+                                        SmallChange="1"
+                                        ValueChanged="OnOverlayOffsetChanged" />
+                                </Grid>
+                                <InfoBar
+                                    IsClosable="False"
+                                    IsOpen="True"
+                                    Message="Right-drag on the map to reposition the overlay."
+                                    Severity="Informational" />
+                            </StackPanel>
+                        </ScrollViewer>
+                </Grid>
+
+                <Grid
+                    Grid.Row="2"
+                    Height="56"
+                    Padding="12,8"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind ViewModel.PositionText, Mode=OneWay}"
+                        TextAlignment="Center" />
+                    <StackPanel
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button
+                            Click="OnOpenClicked"
+                            MinWidth="88"
+                            ToolTipService.ToolTip="Open track map">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="14" Glyph="&#xE8E5;" />
+                                <TextBlock Text="Open" />
+                            </StackPanel>
+                        </Button>
+                        <Button
+                            Click="OnImportClicked"
+                            IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                            MinWidth="88"
+                            ToolTipService.ToolTip="Import recording">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="14" Glyph="&#xE896;" />
+                                <TextBlock Text="Import" />
+                            </StackPanel>
+                        </Button>
+                        <Button
+                            Click="OnSaveClicked"
+                            IsEnabled="{x:Bind ViewModel.IsLoaded, Mode=OneWay}"
+                            MinWidth="80"
+                            Style="{StaticResource AccentButtonStyle}"
+                            ToolTipService.ToolTip="Save track map">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="14" Glyph="&#xE74E;" />
+                                <TextBlock Text="Save" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <InfoBar
+            x:Name="StatusInfoBar"
+            Grid.ColumnSpan="2"
+            Margin="0,8,12,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            IsClosable="True"
+            IsOpen="False" />
+
+        <Grid
+            Grid.ColumnSpan="2"
+            Background="#40000000"
+            Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+            <Border
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="22"
+                Style="{StaticResource SurfaceStyle}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <ProgressRing Width="26" Height="26" IsActive="True" />
+                    <TextBlock VerticalAlignment="Center" Text="Reading recording…" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

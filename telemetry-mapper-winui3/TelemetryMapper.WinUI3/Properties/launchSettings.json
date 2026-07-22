@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TelemetryMapper.WinUI3 (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "TelemetryMapper.WinUI3 (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

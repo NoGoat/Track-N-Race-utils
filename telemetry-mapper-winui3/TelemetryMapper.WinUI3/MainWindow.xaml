@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="TelemetryMapper.WinUI3.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TelemetryMapper.WinUI3"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Track N Race Map Editor"
+    mc:Ignorable="d">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="RootLayout">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TitleBar
+            x:Name="AppTitleBar"
+            Height="48"
+            Subtitle=""
+            Title="Track N Race Map Editor">
+            <TitleBar.IconSource>
+                <ImageIconSource x:Name="TitleBarIconSource" ImageSource="Assets/icon_transparent.png" />
+            </TitleBar.IconSource>
+        </TitleBar>
+
+        <!-- App-level navigation shell. Individual page layouts belong in their pages. -->
+        <NavigationView
+            x:Name="AppNavigationView"
+            Grid.Row="1"
+            AlwaysShowHeader="False"
+            CompactModeThresholdWidth="641"
+            CompactPaneLength="48"
+            ExpandedModeThresholdWidth="1008"
+            IsBackButtonVisible="Collapsed"
+            IsPaneOpen="False"
+            IsPaneToggleButtonVisible="True"
+            IsSettingsVisible="True"
+            OpenPaneLength="240"
+            SelectionChanged="OnNavigationSelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem
+                    x:Name="MapEditorNavigationItem"
+                    Content="Map Editor"
+                    Tag="map-editor">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE800;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem 
+                    x:Name="LiveMapperNavigationItem"
+                    Content="Live Mapper" 
+                    Tag="live-mapper">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7FC;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <Frame x:Name="RootFrame" />
+        </NavigationView>
+    </Grid>
+</Window>

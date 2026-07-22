@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="TelemetryMapper.Core/TelemetryMapper.Core.csproj" />
+  <Project Path="TelemetryMapper.Core.Tests/TelemetryMapper.Core.Tests.csproj" />
+  <Project Path="TelemetryMapper.WinUI3/TelemetryMapper.WinUI3.csproj" />
+</Solution>
