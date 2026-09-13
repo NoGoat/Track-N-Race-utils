@@ -36,11 +36,6 @@
   min-width: 148px;
 }
 
-.page-switcher svg {
-  width: 14px;
-  height: 14px;
-}
-
 .ram-page main.dragging::after {
   content: 'Drop RAM usage log';
 }

@@ -1,8 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import Select, { type ClassNamesConfig, type GroupBase, type Props, type StylesConfig } from 'react-select'
+import Select, { components as selectComponents, type ClassNamesConfig, type DropdownIndicatorProps, type GroupBase, type Props, type StylesConfig } from 'react-select'
 import { SELECT_MENU_ANIMATION_MS } from './selectStyles'
 
 type MenuPhase = 'closed' | 'open' | 'closing'
+
+function SolidDropdownIndicator<
+  Option,
+  IsMulti extends boolean,
+  Group extends GroupBase<Option>,
+>(props: DropdownIndicatorProps<Option, IsMulti, Group>) {
+  return (
+    <selectComponents.DropdownIndicator {...props}>
+      <svg aria-hidden="true" viewBox="0 0 8 5" style={{ display: 'block', width: 8, height: 5, fill: 'none', stroke: '#7c8098', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 1.25 }}>
+        <path d="M1 1l3 3 3-3" />
+      </svg>
+    </selectComponents.DropdownIndicator>
+  )
+}
 
 function shouldReduceAnimations(): boolean {
   return document.documentElement.dataset.reduceAnimations === 'true'
@@ -17,6 +31,7 @@ export default function AnimatedSelect<
   const {
     className,
     classNames,
+    components,
     defaultMenuIsOpen = false,
     menuIsOpen: controlledMenuIsOpen,
     onMenuClose,
@@ -87,6 +102,7 @@ export default function AnimatedSelect<
       {...selectProps}
       className={[className, 'react-select-no-drag'].filter(Boolean).join(' ')}
       classNames={noDragClassNames}
+      components={{ ...components, DropdownIndicator: SolidDropdownIndicator }}
       defaultMenuIsOpen={defaultMenuIsOpen}
       menuIsOpen={phase !== 'closed'}
       onMenuOpen={openMenu}

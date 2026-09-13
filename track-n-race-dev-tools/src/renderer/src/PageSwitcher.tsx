@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { SingleValue } from 'react-select'
-import AnimatedSelect from './pages/tnrd/AnimatedSelect'
-import { buildSelectStyles } from './pages/tnrd/selectStyles'
+import AnimatedSelect from './AnimatedSelect'
+import { buildSelectStyles } from './selectStyles'
 import type { ToolPage } from './types'
 
 interface PageOption {

@@ -32,11 +32,11 @@ export function buildSelectStyles(isDark: boolean, { solidBg = false, transparen
     indicatorSeparator:  ()    => ({ display: 'none' }),
     dropdownIndicator: (base, state) => ({
       ...base,
-      padding: '0 6px',
-      color: state.isFocused || state.selectProps.menuIsOpen ? 'var(--text-primary)' : 'var(--text-secondary)',
+      padding: '0 5px',
+      color: '#7c8098',
       transform: state.selectProps.menuIsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-      transition: 'transform 0.2s ease, color 0.15s ease',
-      '&:hover': { color: 'var(--text-primary)' },
+      transition: 'transform 0.2s ease',
+      '&:hover': { color: '#7c8098' },
     }),
     clearIndicator: (base) => ({ ...base, padding: '0 4px', color: 'var(--text-secondary)', '&:hover': { color: '#e10600' } }),
     menu: (base, state) => ({
