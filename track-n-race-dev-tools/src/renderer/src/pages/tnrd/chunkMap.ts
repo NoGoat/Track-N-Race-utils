@@ -1,4 +1,4 @@
-import type { ChunkInfo, FileOverview, RegionInfo, ViewMode } from '../../shared/types'
+import type { ChunkInfo, FileOverview, RegionInfo, ViewMode } from '../../../../shared/tnrdTypes'
 
 const COLORS: Record<number, string> = {
   0: '#8b90a7', 1: '#5794f2', 2: '#73bf69', 3: '#f2495c', 4: '#fade2a',

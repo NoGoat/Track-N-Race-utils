@@ -5,19 +5,16 @@ import type { SingleValue } from 'react-select'
 import AnimatedSelect from './AnimatedSelect'
 import { ChunkMap } from './chunkMap'
 import { buildSelectStyles } from './selectStyles'
-import type { ChunkInfo, ControlRegionPage, FileOverview, OpenResult, RawPage, RegionInfo, ViewMode } from '../../shared/types'
-import darkIcon from './assets/icon_transparent.png'
-import lightIcon from './assets/icon_transparent_light.png'
+import type { ChunkInfo, ControlRegionPage, FileOverview, OpenResult, RawPage, RegionInfo, ViewMode } from '../../../../shared/tnrdTypes'
 import reactLicense from './assets/licenses/react.txt?raw'
 import reactDomLicense from './assets/licenses/react-dom.txt?raw'
 import reactSelectLicense from './assets/licenses/react-select.txt?raw'
 import cascadiaLicense from './assets/licenses/cascadia-code.txt?raw'
+import type { Theme } from '../../types'
 
 const PAGE_SIZE = 250
 const RAW_PAGE_SIZE = 400
 const CONTROL_PAGE_SIZE = 4096
-const themes = ['dark', 'midnight', 'light'] as const
-type Theme = typeof themes[number]
 type SortKey = keyof Pick<ChunkInfo, 'index' | 'lapNumber' | 'rowType' | 'sequence' | 'firstTime' | 'payloadOffset' | 'compressedSize' | 'uncompressedSize' | 'rowCount' | 'prefixValid'>
 interface Option { value: string; label: string }
 
@@ -144,7 +141,7 @@ function Pager({ page, pages, onChange }: { page: number; pages: number; onChang
   )
 }
 
-export default function App() {
+export default function App({ active, theme, openRequest: shellOpenRequest, onFileNameChange }: { active: boolean; theme: Theme; openRequest: number; onFileNameChange: (name: string | null) => void }) {
   const [overview, setOverview] = useState<FileOverview | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedRegion, setSelectedRegion] = useState<RegionInfo | null>(null)
@@ -158,11 +155,6 @@ export default function App() {
   const [fitVersion, setFitVersion] = useState(0)
   const [status, setStatus] = useState('Ready')
   const [progress, setProgress] = useState<number | null>(null)
-  const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem('tnrd-viewer-theme') as Theme | null
-    return stored && themes.includes(stored) ? stored : 'dark'
-  })
-  const [maximized, setMaximized] = useState(false)
   const [dragging, setDragging] = useState(false)
   const [toast, setToast] = useState<{ text: string; error: boolean } | null>(null)
   const [rawChunk, setRawChunk] = useState<ChunkInfo | null>(null)
@@ -177,6 +169,7 @@ export default function App() {
   const [controlLoading, setControlLoading] = useState(false)
   const [controlError, setControlError] = useState<string | null>(null)
   const openRequest = useRef(0)
+  const handledShellOpenRequest = useRef(shellOpenRequest)
   const rawRequest = useRef(0)
 
   const showToast = useCallback((text: string, error = false) => setToast({ text, error }), [])
@@ -203,27 +196,27 @@ export default function App() {
     setViewMode('physical')
     setTablePage(0)
     setStatus(`Opened ${data.name} · ${data.chunks.length.toLocaleString()} ${data.chunks[0]?.kind === 'stream-block' ? 'logical blocks' : 'chunks'}`)
-    document.title = `${data.name} · TNRD Viewer`
-  }, [showToast])
+    onFileNameChange(data.name)
+  }, [onFileNameChange, showToast])
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    localStorage.setItem('tnrd-viewer-theme', theme)
+    if (!active || handledShellOpenRequest.current === shellOpenRequest) return
+    handledShellOpenRequest.current = shellOpenRequest
+    void openRecording(window.tnrdViewer.openDialog())
+  }, [active, openRecording, shellOpenRequest])
+
+  useEffect(() => {
     setFitVersion(value => value + 1)
   }, [theme])
 
   useEffect(() => {
-    const removeMaximized = window.tnrdViewer.onMaximized(setMaximized)
     const removeProgress = window.tnrdViewer.onProgress(value => {
       setStatus(value.detail)
       setProgress(value.fraction)
     })
     const removeOpen = window.tnrdViewer.onOpenPath(path => { void openRecording(window.tnrdViewer.openPath(path)) })
     const keydown = (event: KeyboardEvent): void => {
-      if (event.ctrlKey && event.key.toLocaleLowerCase() === 'o') {
-        event.preventDefault()
-        void openRecording(window.tnrdViewer.openDialog())
-      }
+      if (!active) return
       if (event.key === 'Escape') {
         setRawChunk(null)
         setControlRegion(null)
@@ -231,10 +224,10 @@ export default function App() {
     }
     window.addEventListener('keydown', keydown)
     return () => {
-      removeMaximized(); removeProgress(); removeOpen()
+      removeProgress(); removeOpen()
       window.removeEventListener('keydown', keydown)
     }
-  }, [openRecording])
+  }, [active, openRecording])
 
   useEffect(() => {
     if (!toast) return
@@ -428,24 +421,6 @@ export default function App() {
 
   return (
     <div className="app-shell" onDragOver={event => { event.preventDefault(); setDragging(true) }} onDragLeave={event => { if (event.currentTarget === event.target) setDragging(false) }} onDrop={onDrop}>
-      <header className="titlebar" onDoubleClick={event => { if (!(event.target as HTMLElement).closest('.no-drag')) window.tnrdViewer.maximize() }}>
-        <div className="brand">
-          <img className="brand-mark" src={theme === 'light' ? lightIcon : darkIcon} alt="" />
-          <span className="brand-name">Track N Race</span>
-          <span className="brand-divider" />
-          <span className="tool-name">TNRD Viewer</span>
-        </div>
-        <span className="title-file">{overview?.name ?? 'No recording open'}</span>
-        <div className="title-actions no-drag">
-          <button className="icon-button" title="Open recording (Ctrl+O)" onClick={() => void openRecording(window.tnrdViewer.openDialog())} aria-label="Open recording"><svg viewBox="0 0 16 16"><path d="M1.5 4.5h5l1.3 1.5h6.7v7.5h-13zM1.5 4.5V2.8h4.4l1.2 1.7" /></svg></button>
-          <button className="icon-button" title="Change theme" onClick={() => setTheme(value => themes[(themes.indexOf(value) + 1) % themes.length])} aria-label="Change theme"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3.2" /><path d="M8 1v1.4M8 13.6V15M1 8h1.4M13.6 8H15M3 3l1 1M12 12l1 1M13 3l-1 1M4 12l-1 1" /></svg></button>
-          <span className="window-divider" />
-          <button className="window-button" onClick={() => window.tnrdViewer.minimize()} aria-label="Minimize"><svg viewBox="0 0 10 10"><path d="M0 5h10" /></svg></button>
-          <button className="window-button" onClick={() => window.tnrdViewer.maximize()} aria-label="Maximize"><svg viewBox="0 0 10 10">{maximized ? <path d="M3 .5h6.5V7M.5 3h6.5v6.5H.5z" /> : <rect x=".5" y=".5" width="9" height="9" />}</svg></button>
-          <button className="window-button close-button" onClick={() => window.tnrdViewer.close()} aria-label="Close"><svg viewBox="0 0 10 10"><path d="M.5.5l9 9M9.5.5l-9 9" /></svg></button>
-        </div>
-      </header>
-
       <main className={dragging ? 'dragging' : ''}>
         {!overview ? (
           <section className="empty-state">

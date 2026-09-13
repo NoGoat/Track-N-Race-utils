@@ -23,7 +23,7 @@ import type {
   RawPageRequest,
   RegionInfo,
   TnrdGeneration,
-} from '../shared/types'
+} from '../shared/tnrdTypes'
 
 // This inspector deliberately has no libtnrp dependency. V1-V3 are streamed
 // through Node's native decompressors into a temporary JSONL index; V4/V5 are

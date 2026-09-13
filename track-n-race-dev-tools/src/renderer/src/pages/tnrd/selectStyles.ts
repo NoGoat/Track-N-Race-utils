@@ -2,7 +2,7 @@ import type { StylesConfig } from 'react-select'
 
 export const SELECT_MENU_ANIMATION_MS = 220
 
-export function buildSelectStyles(isDark: boolean, { solidBg = false, controlHeight = 28, labelStyleGroupHeadings = false, menuWidth, scrollableMenu = true }: { solidBg?: boolean; controlHeight?: number; labelStyleGroupHeadings?: boolean; menuWidth?: string | number; scrollableMenu?: boolean } = {}): StylesConfig<any, false> {
+export function buildSelectStyles(isDark: boolean, { solidBg = false, transparentControl = false, controlHeight = 28, labelStyleGroupHeadings = false, menuWidth, scrollableMenu = true }: { solidBg?: boolean; transparentControl?: boolean; controlHeight?: number; labelStyleGroupHeadings?: boolean; menuWidth?: string | number; scrollableMenu?: boolean } = {}): StylesConfig<any, false> {
   return {
     container: (base) => ({
       ...base,
@@ -13,7 +13,7 @@ export function buildSelectStyles(isDark: boolean, { solidBg = false, controlHei
       ...base,
       display: 'flex',
       alignItems: 'center',
-      background: solidBg ? 'var(--bg-panel)' : 'transparent',
+      background: transparentControl ? 'transparent' : solidBg ? 'var(--bg-panel)' : 'transparent',
       border: 'none',
       boxShadow: 'none',
       minHeight: controlHeight,
@@ -22,7 +22,7 @@ export function buildSelectStyles(isDark: boolean, { solidBg = false, controlHei
       fontSize: 11,
       cursor: 'pointer',
       transition: 'background 0.15s ease',
-      '&:hover': { background: 'var(--bg-hover)' },
+      '&:hover': { background: transparentControl ? 'transparent' : 'var(--bg-hover)' },
     }),
     valueContainer:      (base) => ({ ...base, height: controlHeight, padding: '0 8px', flexWrap: 'nowrap', display: 'flex', alignItems: 'center' }),
     indicatorsContainer: (base) => ({ ...base, height: controlHeight }),

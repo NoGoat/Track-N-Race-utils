@@ -1,8 +1,8 @@
 {
-  "name": "track-n-race-tnrd-viewer",
+  "name": "track-n-race-dev-tools",
   "version": "1.0.0",
   "private": true,
-  "description": "Standalone visual inspector for Track N Race TNRD V1-V5 recordings",
+  "description": "Unified Track N Race developer tools for TNRD recordings and RAM usage logs",
   "license": "GPL-3.0-only",
   "main": "out/main/index.js",
   "scripts": {
@@ -14,7 +14,8 @@
   "dependencies": {
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-select": "^5.10.2"
+    "react-select": "^5.10.2",
+    "uplot": "^1.6.32"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
